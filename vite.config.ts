@@ -2,12 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Served from https://<user>.github.io/drugaway/ in production — the base still
-// matches the (unchanged) repo name, not the app name "Aurion". Keep the same
-// base everywhere (dev + preview) so paths behave identically — `vite preview`
-// reports its command as "serve", so a command-based switch would break it.
+// Served from https://<user>.github.io/aurion/ in production — the base must
+// match the GitHub repo name. Keep the same base everywhere (dev + preview) so
+// paths behave identically — `vite preview` reports its command as "serve", so a
+// command-based switch would break it.
 export default defineConfig({
-  base: "/drugaway/",
+  base: "/aurion/",
   plugins: [
     react(),
     VitePWA({
