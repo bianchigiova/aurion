@@ -120,6 +120,14 @@ export function setDayCountMax(days: number): void {
 }
 
 /**
+ * Whether a sobriety start has been stored yet. False only on a fresh install
+ * (or once storage is unavailable), before the welcome screen has been answered.
+ */
+export function hasSobrietyStart(): boolean {
+  return readRaw(START_KEY) !== null;
+}
+
+/**
  * Returns the sobriety start timestamp, initialising it to "now" on first run so
  * the counter has a defined origin.
  */
@@ -192,11 +200,19 @@ export function recordChangedMind(): number {
  * are left untouched. Returns the new sobriety start timestamp.
  */
 export function restartJourney(): string {
-  const now = new Date().toISOString();
   removeRaw(RELAPSES_KEY);
   removeRaw(CHANGED_MIND_KEY);
+  return beginJourney(new Date().toISOString());
+}
+
+/**
+ * Pin the sobriety start and the journey start to `startISO` and clear the day
+ * counter's high-water mark. Used by the first-run welcome screen (where the
+ * start is the user's last day of use, possibly in the past) and by restarts.
+ */
+export function beginJourney(startISO: string): string {
   removeRaw(DAY_COUNT_MAX_KEY);
-  writeRaw(START_KEY, now);
-  writeRaw(JOURNEY_KEY, now);
-  return now;
+  writeRaw(START_KEY, startISO);
+  writeRaw(JOURNEY_KEY, startISO);
+  return startISO;
 }

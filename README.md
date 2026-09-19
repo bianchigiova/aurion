@@ -8,6 +8,9 @@ a reminder of a promise — between the impulse and the act.
 
 ## How it works
 
+- **Welcome** — shown once, on first install. Asks for the last day you used, so
+  you don't have to start from zero (handy when moving to a new phone). Leave it
+  as today to start fresh; future dates aren't accepted.
 - **Home** — large day counter (`days without drugs`) plus `Since <date>`.
   The count is calendar days since a stored start timestamp, so it ticks over at
   local midnight and advances on its own (it also refreshes when you reopen or

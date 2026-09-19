@@ -172,6 +172,28 @@ body {
   margin-top: 4px;
 }
 
+/* ---------- Welcome (first run) ---------- */
+
+.welcome {
+  justify-content: center;
+  gap: 28px;
+}
+
+.welcome .field {
+  margin-bottom: 0;
+}
+
+.field-error {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ---------- Are you sure ---------- */
 
 .are-you-sure {
@@ -342,7 +364,8 @@ body {
   padding: 14px 18px;
 }
 
-.field input[type="text"] {
+.field input[type="text"],
+.field input[type="date"] {
   flex: 1;
   min-width: 0;
   padding: 14px 16px;
@@ -353,7 +376,8 @@ body {
   font-size: 1rem;
 }
 
-.field input[type="text"]:focus {
+.field input[type="text"]:focus,
+.field input[type="date"]:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

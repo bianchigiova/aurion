@@ -3,10 +3,13 @@ import HomeScreen from "./screens/HomeScreen";
 import AreYouSureScreen from "./screens/AreYouSureScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import StatsScreen from "./screens/StatsScreen";
+import WelcomeScreen from "./screens/WelcomeScreen";
 import {
+  beginJourney,
   getPromiseName,
   getShowStats,
   getSobrietyStartISO,
+  hasSobrietyStart,
   recordChangedMind,
   recordRelapse,
   restartJourney,
@@ -19,7 +22,10 @@ type Screen = "home" | "areYouSure" | "stats" | "settings";
 export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
   const [promiseName, setPromiseName] = useState(getPromiseName);
-  const [startISO, setStartISO] = useState(getSobrietyStartISO);
+  // null until the welcome screen has been answered (fresh install only).
+  const [startISO, setStartISO] = useState<string | null>(() =>
+    hasSobrietyStart() ? getSobrietyStartISO() : null,
+  );
   const [showStats, setShowStats] = useState(getShowStats);
 
   const savePromiseName = (name: string) => {
@@ -46,6 +52,14 @@ export default function App() {
     setStartISO(restartJourney());
     setScreen("home");
   };
+
+  if (startISO === null) {
+    return (
+      <div className="app">
+        <WelcomeScreen onStart={(iso) => setStartISO(beginJourney(iso))} />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
