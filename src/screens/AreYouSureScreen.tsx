@@ -45,9 +45,9 @@ export default function AreYouSureScreen({
   };
 
   return (
-    <section className="screen are-you-sure">
+    <section className={`screen are-you-sure${current ? " has-photo" : ""}`}>
       {current && (
-        <div className="photo-frame">
+        <div className="photo-backdrop">
           <img key={clicks} src={current.url} alt="" className="photo-fade" />
         </div>
       )}
