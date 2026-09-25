@@ -20,6 +20,10 @@ const COMET_MEAN_GAP_MS = 3 * 60_000;
  *  short pause to let the screen settle, over this long. */
 const BIRTH_DELAY_MS = 700;
 const BIRTH_MS = 3_000;
+/** After that it keeps catching the eye: a gentler sparkle this often... */
+const SPARKLE_EVERY_MS = 10_000;
+/** ...lasting this long. */
+const SPARKLE_MS = 2_000;
 
 interface Props {
   /** Seeds the star positions, so the same sky comes back every time. */
@@ -45,7 +49,8 @@ interface Comet {
  *
  * The newest star (today's) is born again every time the screen opens or the
  * app comes back to the foreground, and when the day rolls over while the app
- * is open, the new count brings a new newest star with it.
+ * is open, the new count brings a new newest star with it. Once born, it
+ * sparkles again every few seconds so it stays easy to find.
  */
 export default function StarrySky({ seedKey, count }: Props) {
   const staticRef = useRef<HTMLCanvasElement>(null);
@@ -135,9 +140,15 @@ export default function StarrySky({ seedKey, count }: Props) {
         const x = newest.x * width;
         const y = newest.y * skyHeight;
         const intensity = isLive(newest) ? shimmer(newest, t) : 1;
-        const age = now - birthStart;
-        if (age >= BIRTH_MS) drawStar(liveCtx, newest, x, y, intensity);
-        else if (age >= 0) drawBirth(liveCtx, newest, x, y, age / BIRTH_MS, intensity);
+        const phase = todayStarPhase(now - birthStart);
+        if (phase.kind === "birth") {
+          drawBirth(liveCtx, newest, x, y, phase.p, intensity);
+        } else if (phase.kind !== "unborn") {
+          drawStar(liveCtx, newest, x, y, intensity);
+          if (phase.kind === "sparkle") {
+            drawFlare(liveCtx, newest, x, y, phase.p, 0.7);
+          }
+        }
       }
 
       if (!comet && now >= nextComet) comet = spawnComet(now, width, skyHeight);
@@ -177,6 +188,25 @@ function shimmer(star: Star, t: number): number {
   const a = t * star.twinkleSpeed + star.twinklePhase;
   const wave = 0.6 * Math.sin(a) + 0.4 * Math.sin(a * 2.3 + star.twinklePhase);
   return 1 - star.twinkle * (0.5 + 0.5 * wave);
+}
+
+/**
+ * Where today's star is in its routine, `age` ms after it started being born:
+ * not yet visible, being born, or shining steadily with a sparkle every
+ * SPARKLE_EVERY_MS (`p` runs 0..1 through the birth or sparkle).
+ */
+function todayStarPhase(
+  age: number,
+):
+  | { kind: "unborn" | "steady" }
+  | { kind: "birth" | "sparkle"; p: number } {
+  if (age < 0) return { kind: "unborn" };
+  if (age < BIRTH_MS) return { kind: "birth", p: age / BIRTH_MS };
+  const sinceBirth = (age - BIRTH_MS) % SPARKLE_EVERY_MS;
+  const sparkleAt = SPARKLE_EVERY_MS - SPARKLE_MS;
+  return sinceBirth < sparkleAt
+    ? { kind: "steady" }
+    : { kind: "sparkle", p: (sinceBirth - sparkleAt) / SPARKLE_MS };
 }
 
 function randomCometGap(): number {
@@ -293,15 +323,29 @@ function drawBirth(
 ) {
   const appear = Math.min(1, p / 0.6);
   drawStar(ctx, star, x, y, intensity * (1 - Math.pow(1 - appear, 3)));
+  // The flare is over by 80% of the way in.
+  if (p < 0.8) drawFlare(ctx, star, x, y, p / 0.8, 1);
+}
 
-  // Peaks a third of the way in, gone by 80%.
-  const flare = Math.pow(Math.sin(Math.PI * Math.min(1, p / 0.8)), 2);
+/**
+ * A sparkle over a star, `p` running 0..1 over its life: it swells to a peak
+ * halfway, turning slowly, and dies away. `size` scales it.
+ */
+function drawFlare(
+  ctx: CanvasRenderingContext2D,
+  star: Star,
+  x: number,
+  y: number,
+  p: number,
+  size: number,
+) {
+  const flare = Math.pow(Math.sin(Math.PI * p), 2) * size;
   if (flare <= 0.001) return;
 
   const r = 34 * flare;
   ctx.globalAlpha = flare * 0.9;
   ctx.drawImage(sprite(star.color, "halo"), x - r, y - r, r * 2, r * 2);
-  const angle = p * 0.8;
+  const angle = p * 0.64;
   drawSpikes(ctx, x, y, 40 * flare, angle, 1, star.color);
   ctx.globalAlpha = flare * 0.5;
   drawSpikes(ctx, x, y, 18 * flare, angle + Math.PI / 4, 0.8, star.color);
