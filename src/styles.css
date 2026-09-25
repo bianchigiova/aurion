@@ -15,13 +15,15 @@
 }
 
 /* `100%` alone resolves to the small viewport on iOS and can stop short of the
-   screen's bottom edge; `svh` (the always-visible area) sets a floor. The
-   fallback keeps browsers without `svh` on plain `100%`. */
+   screen's bottom edge, e.g. once the address bar retracts and the rounded
+   corners of the real screen come into view. `lvh` (the full screen) sets a
+   floor; the `vh` fallback keeps browsers without `lvh` on plain `100%`. */
 html,
 body,
 #root {
   height: 100%;
-  min-height: 100svh;
+  min-height: 100vh;
+  min-height: 100lvh;
 }
 
 body {
@@ -35,7 +37,8 @@ body {
 .app {
   position: relative;
   min-height: 100%;
-  min-height: 100svh;
+  min-height: 100vh;
+  min-height: 100lvh;
   max-width: 480px;
   margin: 0 auto;
   padding: env(safe-area-inset-top) 20px calc(env(safe-area-inset-bottom) + 20px);
