@@ -139,8 +139,40 @@ body {
 
 /* ---------- Home ---------- */
 
+/* Set while the home screen is up, which fits the screen exactly: nothing
+   should scroll or rubber-band. */
+html.no-scroll,
+html.no-scroll body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Pinned to the visible screen rather than flowing in the page, so there's
+   nothing to scroll; `touch-action: none` also stops iOS from panning the page
+   under a drag (taps still work). Keeps .app's width cap and side padding. */
 .home {
   align-items: center;
+  position: fixed;
+  inset: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 24px) 20px
+    calc(env(safe-area-inset-bottom) + 20px);
+  touch-action: none;
+}
+
+/* Tap the sky: the UI fades away to leave just the stars. */
+.home > .counter,
+.home > .button,
+.home > .home-actions {
+  transition: opacity 0.6s ease;
+}
+
+.home.is-stargazing > .counter,
+.home.is-stargazing > .button,
+.home.is-stargazing > .home-actions {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Night sky behind the home screen; stars are drawn onto the canvases. Sized

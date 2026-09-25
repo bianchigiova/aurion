@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import StarrySky from "../components/StarrySky";
 import { useDayCount } from "../hooks/useDayCount";
 import { formatDate, humanizeDays } from "../lib/days";
 
 /** How long the day-count tooltip stays up before hiding itself. */
 const TOOLTIP_MS = 4_000;
+/** How long a tap on the sky hides the UI for, unless tapped again sooner. */
+const STARGAZE_MS = 8_000;
 
 interface Props {
   startISO: string;
@@ -24,6 +26,31 @@ export default function HomeScreen({
   const days = useDayCount(startISO);
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const numberRef = useRef<HTMLButtonElement>(null);
+  const [stargazing, setStargazing] = useState(false);
+  // Whether the tap now in progress started while the tooltip was up; such a
+  // tap only dismisses the tooltip, it doesn't also hide the UI.
+  const tapDismissesTooltip = useRef(false);
+
+  // The home screen fits the screen exactly: stop the page scrolling or
+  // rubber-banding underneath it (other screens, like settings, still scroll).
+  useEffect(() => {
+    document.documentElement.classList.add("no-scroll");
+    return () => document.documentElement.classList.remove("no-scroll");
+  }, []);
+
+  useEffect(() => {
+    if (!stargazing) return;
+    const timer = window.setTimeout(() => setStargazing(false), STARGAZE_MS);
+    return () => window.clearTimeout(timer);
+  }, [stargazing]);
+
+  // Tapping the sky (anywhere but a button) fades the UI out to leave just the
+  // stars; the next tap anywhere, or a few seconds, brings it back.
+  const onScreenTap = (e: MouseEvent) => {
+    if (tapDismissesTooltip.current) return;
+    if (!stargazing && (e.target as Element).closest("button")) return;
+    setStargazing((on) => !on);
+  };
 
   // The tooltip hides itself after a few seconds, or on any tap elsewhere.
   useEffect(() => {
@@ -40,7 +67,13 @@ export default function HomeScreen({
   }, [tooltipOpen]);
 
   return (
-    <section className="screen home">
+    <section
+      className={`screen home${stargazing ? " is-stargazing" : ""}`}
+      onPointerDown={() => {
+        tapDismissesTooltip.current = tooltipOpen;
+      }}
+      onClick={onScreenTap}
+    >
       <StarrySky seedKey={startISO} count={days} />
 
       <div className="home-actions">
