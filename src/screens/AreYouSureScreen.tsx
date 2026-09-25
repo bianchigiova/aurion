@@ -7,9 +7,12 @@ import {
 } from "react";
 import { usePhotos } from "../hooks/usePhotos";
 
-const MAX_PAN = 80;
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 2;
+const MIN_ZOOM = 0.6;
+const MAX_ZOOM = 2.5;
+// A finger down zooms in this much right away, so a plain pan (which doesn't
+// otherwise touch the zoom) always has real overscan to reveal instead of
+// running out of photo and showing bare background at the edge.
+const BASE_DRAG_ZOOM = 1.15;
 
 interface Props {
   promiseName: string;
@@ -41,7 +44,11 @@ export default function AreYouSureScreen({
     const img = photoRef.current;
     if (img) img.style.transition = "none";
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (pointers.current.size === 0) {
+      pan.current.zoom = Math.max(pan.current.zoom, BASE_DRAG_ZOOM);
+    }
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    applyPan();
   };
 
   const onPhotoPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -73,8 +80,12 @@ export default function AreYouSureScreen({
       }
     }
 
-    pan.current.x = Math.min(MAX_PAN, Math.max(-MAX_PAN, pan.current.x));
-    pan.current.y = Math.min(MAX_PAN, Math.max(-MAX_PAN, pan.current.y));
+    // Only pan within the overscan the current zoom actually provides, so
+    // dragging never runs past the photo and shows plain background instead.
+    const overscanX = Math.max(0, (window.innerWidth * (pan.current.zoom - 1)) / 2);
+    const overscanY = Math.max(0, (window.innerHeight * (pan.current.zoom - 1)) / 2);
+    pan.current.x = Math.min(overscanX, Math.max(-overscanX, pan.current.x));
+    pan.current.y = Math.min(overscanY, Math.max(-overscanY, pan.current.y));
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     applyPan();
   };
