@@ -33,11 +33,29 @@ export default function AreYouSureScreen({
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pan = useRef({ x: 0, y: 0, zoom: 1 });
 
+  // Size the photo to its own aspect ratio rather than the screen's, so
+  // whichever axis doesn't match the screen overhangs it — real pixels a
+  // pan can bring into view, not pixels object-fit: cover cropped away and
+  // never rendered at all.
+  const sizePhoto = () => {
+    const img = photoRef.current;
+    if (!img || !img.naturalWidth || !img.naturalHeight) return;
+    const photoAspect = img.naturalWidth / img.naturalHeight;
+    const screenAspect = window.innerWidth / window.innerHeight;
+    if (photoAspect > screenAspect) {
+      img.style.height = "100%";
+      img.style.width = `${(photoAspect / screenAspect) * 100}%`;
+    } else {
+      img.style.width = "100%";
+      img.style.height = `${(screenAspect / photoAspect) * 100}%`;
+    }
+  };
+
   const applyPan = () => {
     const img = photoRef.current;
     if (!img) return;
     const { x, y, zoom } = pan.current;
-    img.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+    img.style.transform = `translate(-50%, -30%) translate(${x}px, ${y}px) scale(${zoom})`;
   };
 
   const onPhotoPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -80,10 +98,17 @@ export default function AreYouSureScreen({
       }
     }
 
-    // Only pan within the overscan the current zoom actually provides, so
-    // dragging never runs past the photo and shows plain background instead.
-    const overscanX = Math.max(0, (window.innerWidth * (pan.current.zoom - 1)) / 2);
-    const overscanY = Math.max(0, (window.innerHeight * (pan.current.zoom - 1)) / 2);
+    // Only pan within the overscan the photo actually has at this zoom, so
+    // dragging never runs past its edge and shows plain background instead.
+    // offsetWidth/Height are the photo's own laid-out size (unaffected by
+    // the transform below), already overhanging one axis of the screen.
+    const img = photoRef.current;
+    const overscanX = img
+      ? Math.max(0, (img.offsetWidth * pan.current.zoom - window.innerWidth) / 2)
+      : 0;
+    const overscanY = img
+      ? Math.max(0, (img.offsetHeight * pan.current.zoom - window.innerHeight) / 2)
+      : 0;
     pan.current.x = Math.min(overscanX, Math.max(-overscanX, pan.current.x));
     pan.current.y = Math.min(overscanY, Math.max(-overscanY, pan.current.y));
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -119,6 +144,13 @@ export default function AreYouSureScreen({
   const progress = Math.min(1, clicks / steps);
   const fillStyle = { "--progress": `${progress * 100}%` } as CSSProperties;
 
+  // The <img> remounts (key={clicks}) for each photo; re-measure once it's
+  // loaded, or right away if it was already cached and loaded instantly.
+  useEffect(() => {
+    const img = photoRef.current;
+    if (img && img.complete) sizePhoto();
+  }, [current]);
+
   const onGoAheadClick = () => {
     const next = clicks + 1;
     if (next >= steps) {
@@ -138,7 +170,14 @@ export default function AreYouSureScreen({
           onPointerUp={onPhotoPointerUp}
           onPointerCancel={onPhotoPointerUp}
         >
-          <img key={clicks} ref={photoRef} src={current.url} alt="" className="photo-fade" />
+          <img
+            key={clicks}
+            ref={photoRef}
+            src={current.url}
+            alt=""
+            className="photo-fade"
+            onLoad={sizePhoto}
+          />
         </div>
       )}
 
