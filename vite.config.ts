@@ -13,6 +13,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icon-192.png", "icon-512.png"],
+      // Precache the home-screen background too, so it's there offline.
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,png,jpg}"],
+      },
       // scope + start_url are derived from `base` by the plugin.
       manifest: {
         name: "Aurion",

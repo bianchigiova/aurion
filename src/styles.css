@@ -143,6 +143,52 @@ body {
   align-items: center;
 }
 
+/* Night sky behind the home screen; stars are drawn onto the canvases. Sized
+   like .photo-backdrop so it reaches the bottom edge on iOS. */
+.sky {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100lvh;
+  z-index: 0;
+  background: #0b1a4a;
+  overflow: hidden;
+}
+
+.sky img,
+.sky canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sky img {
+  object-fit: cover;
+  /* Keep the horizon and the stargazer in view; crop from the top of the sky.
+     StarrySky mirrors this geometry to find the horizon. */
+  object-position: 50% 100%;
+}
+
+.home > :not(.sky) {
+  position: relative;
+  z-index: 1;
+}
+
+.home .counter-number {
+  text-shadow: 0 0 28px rgba(56, 189, 248, 0.35);
+}
+
+.home .counter-label,
+.home .counter-since {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+.home .counter-since {
+  color: rgba(241, 245, 249, 0.75);
+}
+
 .home-actions {
   position: absolute;
   top: calc(env(safe-area-inset-top) + 12px);

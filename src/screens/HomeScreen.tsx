@@ -1,3 +1,4 @@
+import StarrySky from "../components/StarrySky";
 import { useDayCount } from "../hooks/useDayCount";
 import { formatDate } from "../lib/days";
 
@@ -20,6 +21,8 @@ export default function HomeScreen({
 
   return (
     <section className="screen home">
+      <StarrySky seedKey={startISO} count={days} />
+
       <div className="home-actions">
         {showStats && (
           <button
