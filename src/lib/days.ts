@@ -61,3 +61,56 @@ export function formatDate(iso: string): string {
     day: "numeric",
   });
 }
+
+function plural(n: number, unit: string): string {
+  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+}
+
+/** `date` moved on by `months` calendar months, clamped to the end of the
+ *  target month (Jan 31 + 1 month = Feb 28/29). */
+function addMonths(date: Date, months: number): Date {
+  const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const lastDay = new Date(
+    target.getFullYear(),
+    target.getMonth() + 1,
+    0,
+  ).getDate();
+  target.setDate(Math.min(date.getDate(), lastDay));
+  return target;
+}
+
+/**
+ * A day count spelled out in calendar terms, e.g. "1 year, 3 months, 10 days".
+ * Counts real calendar months and years from the local start date, so it lines
+ * up with the "Since ..." date (June 1 → Sept 1 is exactly "3 months"). Under a
+ * month it uses weeks instead; under a week, just days.
+ */
+export function humanizeDays(startISO: string, days: number): string {
+  const s = new Date(startISO);
+  if (Number.isNaN(s.getTime())) return plural(days, "day");
+  const start = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + days);
+
+  let months =
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    end.getMonth() -
+    start.getMonth();
+  if (addMonths(start, months) > end) months--;
+  const rest = Math.round(
+    (end.getTime() - addMonths(start, months).getTime()) / MS_PER_DAY,
+  );
+
+  if (months === 0) {
+    const weeks = Math.floor(rest / 7);
+    const parts = weeks > 0 ? [plural(weeks, "week")] : [];
+    if (rest % 7 > 0 || weeks === 0) parts.push(plural(rest % 7, "day"));
+    return parts.join(", ");
+  }
+
+  const years = Math.floor(months / 12);
+  const parts: string[] = [];
+  if (years > 0) parts.push(plural(years, "year"));
+  if (months % 12 > 0) parts.push(plural(months % 12, "month"));
+  if (rest > 0) parts.push(plural(rest, "day"));
+  return parts.join(", ");
+}

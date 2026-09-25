@@ -1,6 +1,10 @@
+import { useEffect, useRef, useState } from "react";
 import StarrySky from "../components/StarrySky";
 import { useDayCount } from "../hooks/useDayCount";
-import { formatDate } from "../lib/days";
+import { formatDate, humanizeDays } from "../lib/days";
+
+/** How long the day-count tooltip stays up before hiding itself. */
+const TOOLTIP_MS = 4_000;
 
 interface Props {
   startISO: string;
@@ -18,6 +22,22 @@ export default function HomeScreen({
   onOpenSettings,
 }: Props) {
   const days = useDayCount(startISO);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const numberRef = useRef<HTMLButtonElement>(null);
+
+  // The tooltip hides itself after a few seconds, or on any tap elsewhere.
+  useEffect(() => {
+    if (!tooltipOpen) return;
+    const timer = window.setTimeout(() => setTooltipOpen(false), TOOLTIP_MS);
+    const onPointerDown = (e: PointerEvent) => {
+      if (!numberRef.current?.contains(e.target as Node)) setTooltipOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [tooltipOpen]);
 
   return (
     <section className="screen home">
@@ -43,7 +63,21 @@ export default function HomeScreen({
       </div>
 
       <div className="counter">
-        <span className="counter-number">{days}</span>
+        <button
+          ref={numberRef}
+          className="counter-number"
+          onClick={() => setTooltipOpen((open) => !open)}
+          aria-describedby="counter-tooltip"
+        >
+          {days}
+          <span
+            id="counter-tooltip"
+            role="tooltip"
+            className={`counter-tooltip${tooltipOpen ? " is-open" : ""}`}
+          >
+            {humanizeDays(startISO, days)}
+          </span>
+        </button>
         <span className="counter-label">
           {days === 1 ? "day" : "days"} without drugs
         </span>

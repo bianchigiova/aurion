@@ -222,6 +222,57 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* The number is a button (tap for the tooltip) but shouldn't look like one. */
+button.counter-number {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tap the day count for "3 months, 8 days": a pill floating just above it. */
+.counter-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translate(-50%, 6px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(241, 245, 249, 0.18);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.counter-tooltip.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* A little pointer under the pill, towards the number. */
+.counter-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.72);
+}
+
 .counter-label {
   font-size: 1.25rem;
   font-weight: 600;
