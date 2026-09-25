@@ -13,6 +13,7 @@ const MAX_ZOOM = 2.5;
 // otherwise touch the zoom) always has real overscan to reveal instead of
 // running out of photo and showing bare background at the edge.
 const BASE_DRAG_ZOOM = 1.15;
+const SPRING_BACK_TRANSITION = "transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 interface Props {
   promiseName: string;
@@ -28,6 +29,7 @@ export default function AreYouSureScreen({
   const { photos, loading } = usePhotos();
   const [start, setStart] = useState<number | null>(null);
   const [clicks, setClicks] = useState(0);
+  const [isGesturing, setIsGesturing] = useState(false);
 
   const photoRef = useRef<HTMLImageElement | null>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -64,6 +66,7 @@ export default function AreYouSureScreen({
     event.currentTarget.setPointerCapture(event.pointerId);
     if (pointers.current.size === 0) {
       pan.current.zoom = Math.max(pan.current.zoom, BASE_DRAG_ZOOM);
+      setIsGesturing(true);
     }
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     applyPan();
@@ -121,8 +124,9 @@ export default function AreYouSureScreen({
 
     pan.current = { x: 0, y: 0, zoom: 1 };
     const img = photoRef.current;
-    if (img) img.style.transition = "";
+    if (img) img.style.transition = SPRING_BACK_TRANSITION;
     applyPan();
+    setIsGesturing(false);
   };
 
   // Pick the starting photo once, at random, when the list first loads.
@@ -161,7 +165,11 @@ export default function AreYouSureScreen({
   };
 
   return (
-    <section className={`screen are-you-sure${current ? " has-photo" : ""}`}>
+    <section
+      className={`screen are-you-sure${current ? " has-photo" : ""}${
+        isGesturing ? " is-gesturing" : ""
+      }`}
+    >
       {current && (
         <div
           className="photo-backdrop"

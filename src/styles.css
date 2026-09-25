@@ -259,9 +259,12 @@ body {
   /* Match object-position so a pinch zoom grows from the same point. */
   transform-origin: 50% 30%;
   transform: translate(-50%, -30%);
-  /* The pan/zoom gesture drives this directly; the spring-back on release
-     is the only animated case, so it's given its own bouncy easing. */
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* No transition by default: sizing the photo to its aspect ratio (JS,
+     once loaded) shifts this same translate() to a different resolved
+     offset, and animating that would visibly slide the photo into place
+     on every load. JS turns the bouncy spring-back transition on only for
+     the moment it resets the gesture transform on release. */
+  transition: none;
   display: block;
 }
 
@@ -331,6 +334,14 @@ body {
 
 .prompt {
   text-align: center;
+  transition: opacity 0.2s ease;
+}
+
+/* Panning/zooming the photo fades the text and buttons out of the way. */
+.is-gesturing .prompt,
+.is-gesturing .actions {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .prompt h1 {
@@ -348,6 +359,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: opacity 0.2s ease;
 }
 
 /* ---------- Screen header (settings, stats) ---------- */
