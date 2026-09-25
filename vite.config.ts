@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon-192.png", "icon-512.png"],
+      includeAssets: ["icon-192.png", "icon-512.png", "apple-touch-icon.png"],
       // Precache the home-screen background too, so it's there offline.
       workbox: {
         globPatterns: ["**/*.{js,css,html,png,jpg}"],
