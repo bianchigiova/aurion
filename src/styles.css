@@ -221,6 +221,9 @@ body {
   height: 100lvh;
   z-index: 0;
   background: var(--bg);
+  /* Dragging pans/zooms the photo (handled in JS); don't let the browser
+     scroll or bounce the page underneath the gesture. */
+  touch-action: none;
 }
 
 .photo-backdrop::after {
@@ -243,6 +246,11 @@ body {
   object-fit: cover;
   /* Bias the crop upwards: faces sit in the upper part of most photos. */
   object-position: 50% 30%;
+  /* Match object-position so a pinch zoom grows from the same point. */
+  transform-origin: 50% 30%;
+  /* The pan/zoom gesture drives this directly; the spring-back on release
+     is the only animated case, so it's given its own bouncy easing. */
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: block;
 }
 
