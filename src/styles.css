@@ -171,8 +171,15 @@ body {
   object-position: 50% 100%;
 }
 
-.home > :not(.sky) {
+/* Lift the content above the sky. The corner buttons keep their own absolute
+   positioning (.home-actions), so they only get the z-index. */
+.home > .counter,
+.home > .button {
   position: relative;
+  z-index: 1;
+}
+
+.home > .home-actions {
   z-index: 1;
 }
 
