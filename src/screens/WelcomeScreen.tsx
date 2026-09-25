@@ -14,11 +14,11 @@ export default function WelcomeScreen({ onStart }: Props) {
     <section className="screen welcome">
       <div className="prompt">
         <h1>Welcome</h1>
-        <p>When was the last day you used drugs?</p>
+        <p>When was the last time you gave in?</p>
       </div>
 
       <div className="field">
-        <label htmlFor="last-use">Last day of use</label>
+        <label htmlFor="last-use">Last day you gave in</label>
         <div className="field-row">
           <input
             id="last-use"

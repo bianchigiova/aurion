@@ -21,7 +21,7 @@ export default defineConfig({
       manifest: {
         name: "Aurion",
         short_name: "Aurion",
-        description: "Track days clean and pause before a relapse.",
+        description: "Count the days without, and pause before giving in.",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",

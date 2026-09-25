@@ -2,16 +2,17 @@
 
 _Aurion_ (αὔριον) is Ancient Greek for "tomorrow".
 
-A small personal PWA to support staying off drugs. It keeps a big, always-visible
-count of days clean, and puts a deliberate pause — a photo of someone you love and
+A small personal PWA to support staying away from an addiction — drugs,
+alcohol, smoking or anything else. It keeps a big, always-visible
+count of days without, and puts a deliberate pause — a photo of someone you love and
 a reminder of a promise — between the impulse and the act.
 
 ## How it works
 
-- **Welcome** — shown once, on first install. Asks for the last day you used, so
+- **Welcome** — shown once, on first install. Asks for the last day you gave in, so
   you don't have to start from zero (handy when moving to a new phone). Leave it
   as today to start fresh; future dates aren't accepted.
-- **Home** — large day counter (`days without drugs`) plus `Since <date>`.
+- **Home** — large day counter (`days without`) plus `Since <date>`.
   The count is calendar days since a stored start timestamp, so it ticks over at
   local midnight and advances on its own (it also refreshes when you reopen or
   refocus the app). A high-water mark keeps it from slipping backwards if you
