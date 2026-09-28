@@ -32,7 +32,16 @@ export default function StatsScreen({ onBack }: Props) {
         </div>
 
         <div className="stat-row">
-          <span className="stat-label">Longest time before relapse</span>
+          <span className="stat-label">Days in your journey</span>
+          <span className="stat-value">{dayLabel(stats.journeyDays)}</span>
+          <span className="stat-caption">
+            Every day counts toward your sky, even the hard ones — it never
+            resets.
+          </span>
+        </div>
+
+        <div className="stat-row">
+          <span className="stat-label">Longest stretch before giving in</span>
           <span className="stat-value">{dayLabel(stats.longestSpellDays)}</span>
           {stats.longestIsCurrent && stats.longestSpellDays > 0 && (
             <span className="stat-caption">That's your current streak.</span>
@@ -40,19 +49,19 @@ export default function StatsScreen({ onBack }: Props) {
         </div>
 
         <div className="stat-row">
-          <span className="stat-label">Average time before relapse</span>
+          <span className="stat-label">Average stretch before giving in</span>
           <span className="stat-value">
             {stats.averageSpellDays === null
               ? "—"
               : dayLabel(stats.averageSpellDays)}
           </span>
           {stats.relapseCount === 0 && (
-            <span className="stat-caption">No relapses yet.</span>
+            <span className="stat-caption">Haven't given in yet.</span>
           )}
         </div>
 
         <div className="stat-row">
-          <span className="stat-label">Number of relapses</span>
+          <span className="stat-label">Times you've given in</span>
           <span className="stat-value">{stats.relapseCount}</span>
         </div>
 

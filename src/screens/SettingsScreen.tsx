@@ -115,8 +115,8 @@ export default function SettingsScreen({
           <label className="toggle-text" htmlFor="show-stats">
             <span className="toggle-title">Show stats</span>
             <span className="toggle-hint">
-              A stats screen with your longest and average time before relapse.
-              Off by default so relapses don't become a score.
+              A stats screen with your longest and average stretch before
+              giving in. Off by default so it doesn't become a score.
             </span>
           </label>
           <input

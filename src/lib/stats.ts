@@ -1,3 +1,4 @@
+import { calendarDaysSince } from "./days";
 import { getChangedMindCount, getJourneyStartISO, getRelapseISOs } from "./prefs";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -5,6 +6,9 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export interface Stats {
   /** ISO date the journey began. */
   journeyStartISO: string;
+  /** Whole days since the journey began — unlike the home screen's streak,
+   *  this never resets on a relapse (matches the sky, which doesn't either). */
+  journeyDays: number;
   /** Number of relapses so far (equivalently, spells that have already ended). */
   relapseCount: number;
   /** Longest spell in whole days, including the current ongoing one. */
@@ -48,6 +52,7 @@ export function computeStats(now: number = Date.now()): Stats {
 
   return {
     journeyStartISO,
+    journeyDays: calendarDaysSince(journeyStartISO),
     relapseCount: completed.length,
     longestSpellDays: Math.floor(longestMs / MS_PER_DAY),
     longestIsCurrent: spells.length > 0 && currentMs === longestMs,
