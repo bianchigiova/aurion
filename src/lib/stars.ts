@@ -7,6 +7,8 @@
  * star stays on screen whatever the device's aspect ratio.
  */
 
+import { hashString, mulberry32 } from "./random";
+
 export interface Star {
   /** 0..1 across the sky. */
   x: number;
@@ -39,28 +41,6 @@ const PALETTE: { color: [number, number, number]; weight: number }[] = [
   { color: [255, 196, 160], weight: 5 }, // orange (rare)
 ];
 const PALETTE_TOTAL = PALETTE.reduce((sum, p) => sum + p.weight, 0);
-
-/** 32-bit string hash (FNV-1a). */
-function hashString(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
-
-/** mulberry32: small, fast seeded PRNG returning floats in [0, 1). */
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 function pickColor(r: number): [number, number, number] {
   let acc = r * PALETTE_TOTAL;

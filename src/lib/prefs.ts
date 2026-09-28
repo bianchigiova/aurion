@@ -18,6 +18,7 @@ const RELAPSES_KEY = `${NS}.relapses`;
 const CHANGED_MIND_KEY = `${NS}.changedMindCount`;
 const SHOW_STATS_KEY = `${NS}.showStats`;
 const DAY_COUNT_MAX_KEY = `${NS}.dayCountMax`;
+const LIFETIME_DAY_COUNT_MAX_KEY = `${NS}.lifetimeDayCountMax`;
 
 /**
  * One-time migration of persisted state from the app's former name ("drugaway").
@@ -120,6 +121,22 @@ export function setDayCountMax(days: number): void {
 }
 
 /**
+ * Same high-water-mark clamp as `getDayCountMax`/`setDayCountMax`, but for the
+ * lifetime day count the sky is seeded from (see `StarrySky`). Kept separate
+ * so a relapse — which clears the streak's mark — doesn't touch this one; it
+ * is only cleared when `journeyStartISO` itself moves, in `beginJourney`.
+ */
+export function getLifetimeDayCountMax(): number {
+  const raw = readRaw(LIFETIME_DAY_COUNT_MAX_KEY);
+  const n = raw ? Number.parseInt(raw, 10) : 0;
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+export function setLifetimeDayCountMax(days: number): void {
+  writeRaw(LIFETIME_DAY_COUNT_MAX_KEY, String(Math.max(0, Math.floor(days))));
+}
+
+/**
  * Whether a sobriety start has been stored yet. False only on a fresh install
  * (or once storage is unavailable), before the welcome screen has been answered.
  */
@@ -206,12 +223,14 @@ export function restartJourney(): string {
 }
 
 /**
- * Pin the sobriety start and the journey start to `startISO` and clear the day
- * counter's high-water mark. Used by the first-run welcome screen (where the
- * start is the user's last day of use, possibly in the past) and by restarts.
+ * Pin the sobriety start and the journey start to `startISO` and clear both
+ * day counters' high-water marks. Used by the first-run welcome screen (where
+ * the start is the user's last day of use, possibly in the past) and by
+ * restarts.
  */
 export function beginJourney(startISO: string): string {
   removeRaw(DAY_COUNT_MAX_KEY);
+  removeRaw(LIFETIME_DAY_COUNT_MAX_KEY);
   writeRaw(START_KEY, startISO);
   writeRaw(JOURNEY_KEY, startISO);
   return startISO;

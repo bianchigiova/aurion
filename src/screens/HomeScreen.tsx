@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from "react";
 import StarrySky from "../components/StarrySky";
 import { useDayCount } from "../hooks/useDayCount";
 import { formatDate, humanizeDays } from "../lib/days";
+import { getJourneyStartISO, getRelapseISOs } from "../lib/prefs";
 
 /** How long the day-count tooltip stays up before hiding itself. */
 const TOOLTIP_MS = 4_000;
@@ -24,6 +25,13 @@ export default function HomeScreen({
   onOpenSettings,
 }: Props) {
   const days = useDayCount(startISO);
+  // The sky is seeded from the whole journey, not the current streak, so a
+  // relapse doesn't reset it — read once; a relapse remounts this screen
+  // fresh (see App's areYouSure → home transition) rather than needing a
+  // live subscription.
+  const [journeyStartISO] = useState(getJourneyStartISO);
+  const [relapseISOs] = useState(getRelapseISOs);
+  const lifetimeDays = useDayCount(journeyStartISO, "lifetime");
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const numberRef = useRef<HTMLButtonElement>(null);
   const [stargazing, setStargazing] = useState(false);
@@ -74,7 +82,11 @@ export default function HomeScreen({
       }}
       onClick={onScreenTap}
     >
-      <StarrySky seedKey={startISO} count={days} />
+      <StarrySky
+        seedKey={journeyStartISO}
+        count={lifetimeDays}
+        relapseISOs={relapseISOs}
+      />
 
       <div className="home-actions">
         {showStats && (

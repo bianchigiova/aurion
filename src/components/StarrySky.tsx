@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import skyUrl from "../assets/night-sky.jpg";
+import { cloudProgress, generateClouds, type Cloud } from "../lib/clouds";
 import { generateStars, type Star } from "../lib/stars";
 
 /** Natural size of night-sky.jpg, and how far down its sky the stars reach
@@ -25,11 +26,41 @@ const SPARKLE_EVERY_MS = 10_000;
 /** ...lasting this long. */
 const SPARKLE_MS = 2_000;
 
+/**
+ * URLs for the cloud sprite art, resolved at build time but not fetched
+ * until something actually needs one (see `loadCloudSprite`) — most people
+ * have no active cloud at all, so eagerly downloading all of them would
+ * waste well over a megabyte for nothing.
+ */
+const cloudSpriteModules = import.meta.glob<string>("../assets/clouds/*.png", {
+  eager: true,
+  import: "default",
+});
+const cloudSpriteUrls = Object.keys(cloudSpriteModules)
+  .sort()
+  .map((key) => cloudSpriteModules[key]);
+
+const cloudSpriteCache = new Map<number, HTMLImageElement>();
+
+function loadCloudSprite(index: number): HTMLImageElement | undefined {
+  const url = cloudSpriteUrls[index];
+  if (!url) return undefined;
+  let img = cloudSpriteCache.get(index);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    cloudSpriteCache.set(index, img);
+  }
+  return img;
+}
+
 interface Props {
   /** Seeds the star positions, so the same sky comes back every time. */
   seedKey: string;
   /** One star per sober day. */
   count: number;
+  /** One drifting, fading cloud per relapse still within its dissipation window. */
+  relapseISOs: string[];
 }
 
 interface Comet {
@@ -52,10 +83,14 @@ interface Comet {
  * is open, the new count brings a new newest star with it. Once born, it
  * sparkles again every few seconds so it stays easy to find.
  */
-export default function StarrySky({ seedKey, count }: Props) {
+export default function StarrySky({ seedKey, count, relapseISOs }: Props) {
   const staticRef = useRef<HTMLCanvasElement>(null);
   const liveRef = useRef<HTMLCanvasElement>(null);
   const stars = useMemo(() => generateStars(seedKey, count), [seedKey, count]);
+  const clouds = useMemo(
+    () => generateClouds(relapseISOs, cloudSpriteUrls.length),
+    [relapseISOs],
+  );
 
   useEffect(() => {
     const staticCanvas = staticRef.current;
@@ -76,10 +111,11 @@ export default function StarrySky({ seedKey, count }: Props) {
     let width = 0;
     let height = 0;
     let skyHeight = 0;
+    let dpr = 1;
 
     const resize = () => {
       const rect = liveCanvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      dpr = Math.min(window.devicePixelRatio || 1, 3);
       width = rect.width;
       height = rect.height;
       // Same geometry as the <img>'s `object-fit: cover` anchored to the bottom.
@@ -100,13 +136,50 @@ export default function StarrySky({ seedKey, count }: Props) {
       for (const star of steady) {
         drawStar(staticCtx, star, star.x * width, star.y * skyHeight, 1);
       }
+      // Clouds need to sit in front of the live stars/comets too, which only
+      // exist on liveCtx and are redrawn every frame — so normally they're
+      // drawn there instead (below). Reduced motion has no live layer at
+      // all, so this is the only place they get painted in that case.
+      if (reduceMotion) {
+        for (const cloud of clouds) {
+          drawCloud(staticCtx, cloud, width, skyHeight, dpr);
+        }
+      }
     };
 
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(liveCanvas);
 
-    if (reduceMotion) return () => observer.disconnect();
+    // Sprites for any active clouds start loading in resize() above (via
+    // loadCloudSprite), but that first resize() likely painted before they
+    // arrived — redraw once they're actually ready rather than waiting on
+    // the 60s cloud timer below.
+    let cancelled = false;
+    const neededSprites = clouds
+      .flatMap((cloud) => cloud.puffs.map((puff) => loadCloudSprite(puff.spriteIndex)))
+      .filter((img): img is HTMLImageElement => img !== undefined);
+    Promise.all(neededSprites.map((img) => img.decode().catch(() => {}))).then(() => {
+      if (!cancelled) resize();
+    });
+
+    // A cloud's drift/fade only changes with calendar days, not frame to
+    // frame, so it needs its own periodic redraw independent of (and not
+    // skipped by) the live animation loop below.
+    const cloudTimer = window.setInterval(resize, 60_000);
+    const onSkyVisible = () => {
+      if (document.visibilityState === "visible") resize();
+    };
+    document.addEventListener("visibilitychange", onSkyVisible);
+
+    if (reduceMotion) {
+      return () => {
+        cancelled = true;
+        window.clearInterval(cloudTimer);
+        document.removeEventListener("visibilitychange", onSkyVisible);
+        observer.disconnect();
+      };
+    }
 
     let comet: Comet | null = null;
     let nextComet =
@@ -158,15 +231,25 @@ export default function StarrySky({ seedKey, count }: Props) {
           nextComet = now + randomCometGap();
         }
       }
+
+      // Drawn last so clouds sit in front of everything else on this frame —
+      // twinkling stars, the newest star, and any comet — not just the
+      // steady stars underneath on the static layer.
+      for (const cloud of clouds) {
+        drawCloud(liveCtx, cloud, width, skyHeight, dpr);
+      }
     };
     raf = requestAnimationFrame(frame);
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf);
-      observer.disconnect();
+      window.clearInterval(cloudTimer);
+      document.removeEventListener("visibilitychange", onSkyVisible);
       document.removeEventListener("visibilitychange", onVisible);
+      observer.disconnect();
     };
-  }, [stars]);
+  }, [stars, clouds]);
 
   return (
     <div className="sky" aria-hidden="true">
@@ -421,4 +504,81 @@ function drawComet(
   ctx.drawImage(sprite([220, 232, 255], "core"), hx - r / 2, hy - r / 2, r, r);
   ctx.restore();
   return true;
+}
+
+// ---------- Clouds ----------
+
+/** How much of a cloud's life is spent visibly drifting off before it's
+ *  fully faded, vs. still opaque near the start. */
+const CLOUD_FADE_FROM = 0.7;
+
+/** Base cloud width as a fraction of the screen; `cloud.scale` multiplies it. */
+const CLOUD_BASE_WIDTH = 0.4;
+
+/** How many times to composite the sprite over itself to make it read as
+ *  more solid (see the comment at the draw call). */
+const CLOUD_OPACITY_PASSES = 3;
+
+/** Fraction of skyHeight kept clear just above the horizon/hills line, so a
+ *  low formation's puffs never dip into the foreground scene (the boy and
+ *  his telescope) below it. */
+const SKY_HORIZON_MARGIN = 0.08;
+
+function drawCloud(
+  ctx: CanvasRenderingContext2D,
+  cloud: Cloud,
+  width: number,
+  skyHeight: number,
+  dpr: number,
+) {
+  const progress = cloudProgress(cloud);
+  if (progress >= 1) return;
+
+  const opacity =
+    progress < CLOUD_FADE_FROM
+      ? 1
+      : 1 - (progress - CLOUD_FADE_FROM) / (1 - CLOUD_FADE_FROM);
+  if (opacity <= 0.001) return;
+
+  // The whole formation drifts together, out past the edge (±0.9 of the
+  // width) by the time it's fully dissipated; each puff keeps its offset.
+  const cx = (cloud.startX + cloud.direction * progress * 0.9) * width;
+  const cy = cloud.bandY * skyHeight;
+
+  // The sky canvas extends down to skyHeight, but that's the horizon/hills
+  // line, not the bottom of the picture — the boy and his telescope sit in
+  // the foreground below it. Keep every puff's bottom edge above that line
+  // (with a little breathing room) regardless of how low its formation's
+  // band or its own vertical jitter would otherwise put it.
+  const maxPuffBottom = skyHeight * (1 - SKY_HORIZON_MARGIN);
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  for (const puff of cloud.puffs) {
+    const sprite = loadCloudSprite(puff.spriteIndex);
+    if (!sprite || !sprite.complete || sprite.naturalWidth === 0) continue;
+
+    // Never draw past the sprite's own resolution (in CSS px, so divide out
+    // the device pixel ratio) — the art is modest-resolution and upscaling
+    // it further than that read as pixelated/blurry. Covering a big chunk
+    // of the sky is done with more puffs, not bigger ones.
+    const maxWidth = sprite.naturalWidth / dpr;
+    const drawWidth = Math.min(width * CLOUD_BASE_WIDTH * puff.scale, maxWidth);
+    const drawHeight = drawWidth * (sprite.naturalHeight / sprite.naturalWidth);
+
+    const py = Math.min(cy + puff.dy * width, maxPuffBottom - drawHeight / 2);
+
+    ctx.save();
+    ctx.translate(cx + puff.dx * width, py);
+    if (puff.flip) ctx.scale(-1, 1);
+    // The art's own alpha is fairly soft even at its most solid, which read
+    // as too see-through; compositing it over itself a couple of times
+    // pushes translucent pixels towards opaque (fully transparent ones are
+    // unaffected) without touching its actual pixel data.
+    for (let pass = 0; pass < CLOUD_OPACITY_PASSES; pass++) {
+      ctx.drawImage(sprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+    }
+    ctx.restore();
+  }
+  ctx.restore();
 }

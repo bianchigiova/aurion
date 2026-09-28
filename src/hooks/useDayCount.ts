@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { calendarDaysSince } from "../lib/days";
-import { getDayCountMax, setDayCountMax } from "../lib/prefs";
+import {
+  getDayCountMax,
+  getLifetimeDayCountMax,
+  setDayCountMax,
+  setLifetimeDayCountMax,
+} from "../lib/prefs";
 
 /**
- * Derives the sober-day count from a fixed start timestamp. Nothing is persisted
+ * Derives a day count from a fixed start timestamp. Nothing is persisted
  * per-day — the number simply recomputes:
  *   - every 60s (covers the app being left open across midnight),
  *   - whenever the tab regains focus / visibility (covers reopening the app).
@@ -12,15 +17,21 @@ import { getDayCountMax, setDayCountMax } from "../lib/prefs";
  *
  * The raw figure is calendar days since the start date, so it ticks over at
  * local midnight. Crossing into a timezone behind the previous one could nudge
- * that backwards, so the result is clamped to a stored high-water mark that only
- * ever rises — until the spell restarts, which clears it (see prefs).
+ * that backwards, so the result is clamped to a stored high-water mark that
+ * only ever rises. `variant` picks which mark: "streak" (the default) clamps
+ * the current sober spell and is cleared on every relapse; "lifetime" clamps
+ * the sky's ever-growing star count and is only cleared when the journey
+ * itself restarts (see prefs).
  */
-export function useDayCount(startISO: string): number {
-  const [count, setCount] = useState(() => derive(startISO));
+export function useDayCount(
+  startISO: string,
+  variant: "streak" | "lifetime" = "streak",
+): number {
+  const [count, setCount] = useState(() => derive(startISO, variant));
 
   const refresh = useCallback(() => {
-    setCount(derive(startISO));
-  }, [startISO]);
+    setCount(derive(startISO, variant));
+  }, [startISO, variant]);
 
   useEffect(() => {
     refresh();
@@ -40,8 +51,10 @@ export function useDayCount(startISO: string): number {
   return count;
 }
 
-function derive(startISO: string): number {
-  const days = Math.max(calendarDaysSince(startISO), getDayCountMax());
-  setDayCountMax(days);
+function derive(startISO: string, variant: "streak" | "lifetime"): number {
+  const getMax = variant === "lifetime" ? getLifetimeDayCountMax : getDayCountMax;
+  const setMax = variant === "lifetime" ? setLifetimeDayCountMax : setDayCountMax;
+  const days = Math.max(calendarDaysSince(startISO), getMax());
+  setMax(days);
   return days;
 }
