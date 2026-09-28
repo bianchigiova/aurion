@@ -1,8 +1,8 @@
 /**
  * Small wrapper over localStorage for the scalar state the app keeps: the
- * promise recipient's name, the current sobriety start timestamp, and the
- * journey history used by the stats screen (first-ever start, every relapse,
- * and how many times the user backed out of the "are you sure?" screen).
+ * current sobriety start timestamp, and the journey history used by the
+ * stats screen (first-ever start, every relapse, and how many times the
+ * user backed out of the "are you sure?" screen).
  *
  * Every access is guarded: in private-browsing modes localStorage can throw on
  * read or write, so we fall back to an in-memory store and the app keeps working
@@ -11,7 +11,6 @@
 
 const NS = "aurion";
 
-const NAME_KEY = `${NS}.promiseName`;
 const START_KEY = `${NS}.sobrietyStartISO`;
 const JOURNEY_KEY = `${NS}.journeyStartISO`;
 const RELAPSES_KEY = `${NS}.relapses`;
@@ -28,7 +27,6 @@ const LIFETIME_DAY_COUNT_MAX_KEY = `${NS}.lifetimeDayCountMax`;
  */
 const LEGACY_NS = "drugaway";
 const KEY_SUFFIXES = [
-  "promiseName",
   "sobrietyStartISO",
   "journeyStartISO",
   "relapses",
@@ -81,14 +79,6 @@ function removeRaw(key: string): void {
   } catch {
     /* ignore — memory fallback already cleared */
   }
-}
-
-export function getPromiseName(): string {
-  return readRaw(NAME_KEY) ?? "";
-}
-
-export function setPromiseName(name: string): void {
-  writeRaw(NAME_KEY, name.trim());
 }
 
 /**

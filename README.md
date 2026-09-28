@@ -4,8 +4,8 @@ _Aurion_ (αὔριον) is Ancient Greek for "tomorrow".
 
 A small personal PWA to support staying away from an addiction — drugs,
 alcohol, smoking or anything else. It keeps a big, always-visible
-count of days without, and puts a deliberate pause — a photo of someone you love and
-a reminder of a promise — between the impulse and the act.
+count of days without, and puts a deliberate pause — a photo of someone you
+love, or yourself, happy and proud — between the impulse and the act.
 
 ## How it works
 
@@ -19,20 +19,19 @@ a reminder of a promise — between the impulse and the act.
   cross into an earlier timezone. A cogwheel (top-right) opens Settings; the red
   button starts the "are you sure?" flow.
 - **Are you sure?** — shows a random photo from your library and
-  `You made a promise to <name>.`
+  `You made a promise to someone you love.`
   - `I'm doing it` → a deliberate hurdle: it takes one click per photo before it
     goes through, stepping to the next photo (with rollover) and filling like a
     progress bar each time. On the final click it resets the counter to 0 and
     returns home.
   - `I changed my mind` → just returns home.
-- **Settings** — set the name of the person you made the promise to, add or
-  remove photos, and restart the journey (a confirm dialog first) — which clears
-  the history and stats and resets the counter to zero from today. Photos and the
-  promise name are kept.
+- **Settings** — add or remove photos, and restart the journey (a confirm
+  dialog first) — which clears the history and stats and resets the counter
+  to zero from today. Photos are kept.
 
 ## Data & privacy
 
-Everything stays on your device. The name and start date live in `localStorage`;
+Everything stays on your device. The start date lives in `localStorage`;
 photos live in IndexedDB as blobs. Nothing is uploaded anywhere.
 
 ## Develop

@@ -745,3 +745,20 @@ label.toggle-text {
 .modal-actions .button {
   flex: 1;
 }
+
+/* QR codes need real contrast to scan reliably, so this stays white
+   regardless of theme — a small light card set into the dark modal. */
+.qr-frame {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.qr-url {
+  text-align: center;
+  word-break: break-all;
+  margin-top: -8px;
+}

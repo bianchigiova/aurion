@@ -16,13 +16,11 @@ const BASE_DRAG_ZOOM = 1.15;
 const SPRING_BACK_TRANSITION = "transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 interface Props {
-  promiseName: string;
   onGoAhead: () => void;
   onChangedMind: () => void;
 }
 
 export default function AreYouSureScreen({
-  promiseName,
   onGoAhead,
   onChangedMind,
 }: Props) {
@@ -135,8 +133,6 @@ export default function AreYouSureScreen({
     setStart(photos.length > 0 ? Math.floor(Math.random() * photos.length) : 0);
   }, [loading, photos, start]);
 
-  const who = promiseName.trim() || "someone you love";
-
   // "I'm doing it" is a deliberate hurdle: it takes one click per photo before
   // it goes through, stepping to the next photo (with rollover) each time and
   // filling like a progress bar.
@@ -191,7 +187,7 @@ export default function AreYouSureScreen({
 
       <div className="prompt">
         <h1>Are you sure?</h1>
-        <p>You made a promise to {who}.</p>
+        <p>You made a promise to someone you love.</p>
       </div>
 
       <div className="actions">

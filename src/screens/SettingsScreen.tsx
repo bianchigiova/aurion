@@ -1,34 +1,28 @@
 import { useRef, useState } from "react";
+import QrCode from "../components/QrCode";
 import { usePhotos } from "../hooks/usePhotos";
 
+/** Where the app itself is hosted, for the share QR code — resolved at
+ *  runtime (not hardcoded) so it's correct wherever this build is served. */
+const APP_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
+
 interface Props {
-  promiseName: string;
   showStats: boolean;
-  onSaveName: (name: string) => void;
   onToggleStats: (show: boolean) => void;
   onRestart: () => void;
   onBack: () => void;
 }
 
 export default function SettingsScreen({
-  promiseName,
   showStats,
-  onSaveName,
   onToggleStats,
   onRestart,
   onBack,
 }: Props) {
-  const [name, setName] = useState(promiseName);
-  const [savedFlash, setSavedFlash] = useState(false);
   const [confirmingRestart, setConfirmingRestart] = useState(false);
+  const [sharingOpen, setSharingOpen] = useState(false);
   const { photos, loading, addFiles, remove } = usePhotos();
   const fileInput = useRef<HTMLInputElement>(null);
-
-  const saveName = () => {
-    onSaveName(name);
-    setSavedFlash(true);
-    window.setTimeout(() => setSavedFlash(false), 1500);
-  };
 
   const onPickFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -49,22 +43,6 @@ export default function SettingsScreen({
         </button>
         <h1>Settings</h1>
       </header>
-
-      <div className="field">
-        <label htmlFor="promise-name">Promise made to</label>
-        <div className="field-row">
-          <input
-            id="promise-name"
-            type="text"
-            value={name}
-            placeholder="Name"
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button className="button button-primary" onClick={saveName}>
-            {savedFlash ? "Saved" : "Save"}
-          </button>
-        </div>
-      </div>
 
       <div className="field">
         <div className="field-row field-row--spread">
@@ -90,7 +68,8 @@ export default function SettingsScreen({
           <p className="muted">Loading…</p>
         ) : photos.length === 0 ? (
           <p className="muted">
-            No photos yet. Add a few of the people you're doing this for.
+            No photos yet. Add the people you're doing this for — or
+            yourself, happy and proud.
           </p>
         ) : (
           <div className="photo-grid">
@@ -133,10 +112,28 @@ export default function SettingsScreen({
       <div className="field">
         <div className="field-row field-row--spread">
           <span className="toggle-text">
+            <span className="toggle-title">Share the app</span>
+            <span className="toggle-hint">
+              A QR code that points to the app, so someone nearby can scan it
+              and install it themselves.
+            </span>
+          </span>
+          <button
+            className="button button-ghost"
+            onClick={() => setSharingOpen(true)}
+          >
+            Share
+          </button>
+        </div>
+      </div>
+
+      <div className="field">
+        <div className="field-row field-row--spread">
+          <span className="toggle-text">
             <span className="toggle-title">Restart the journey</span>
             <span className="toggle-hint">
               Clears your history and stats and sets the counter back to zero,
-              starting again from today. Photos and the promise name stay.
+              starting again from today. Photos stay.
             </span>
           </span>
           <button
@@ -177,6 +174,33 @@ export default function SettingsScreen({
                 }}
               >
                 Restart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {sharingOpen && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-title"
+          onClick={() => setSharingOpen(false)}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2 id="share-title">Share Aurion</h2>
+            <p>Scan this to open and install the app.</p>
+            <div className="qr-frame">
+              <QrCode value={APP_URL} size={220} />
+            </div>
+            <p className="muted qr-url">{APP_URL}</p>
+            <div className="modal-actions">
+              <button
+                className="button button-primary"
+                onClick={() => setSharingOpen(false)}
+              >
+                Done
               </button>
             </div>
           </div>
