@@ -304,6 +304,17 @@ html.no-scroll body {
   font-weight: 700;
 }
 
+/* The day-count tooltip in bark brown, with paper-coloured text. */
+.home--light .counter-tooltip {
+  background: rgba(59, 34, 23, 0.86);
+  border-color: rgba(253, 240, 232, 0.3);
+  color: #fdf0e8;
+}
+
+.home--light .counter-tooltip::after {
+  border-top-color: rgba(59, 34, 23, 0.86);
+}
+
 .home--light .counter-since {
   font-weight: 600;
 }
