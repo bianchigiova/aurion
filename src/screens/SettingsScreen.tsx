@@ -1,12 +1,15 @@
 import { useRef, useState } from "react";
 import QrCode from "../components/QrCode";
 import { usePhotos } from "../hooks/usePhotos";
+import { SCENES, type Scene } from "../scenes";
 
 /** Where the app itself is hosted, for the share QR code — resolved at
  *  runtime (not hardcoded) so it's correct wherever this build is served. */
 const APP_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
 interface Props {
+  scene: Scene;
+  onChooseScene: (scene: Scene) => void;
   showStats: boolean;
   onToggleStats: (show: boolean) => void;
   onRestart: () => void;
@@ -14,6 +17,8 @@ interface Props {
 }
 
 export default function SettingsScreen({
+  scene,
+  onChooseScene,
   showStats,
   onToggleStats,
   onRestart,
@@ -87,6 +92,34 @@ export default function SettingsScreen({
             ))}
           </div>
         )}
+      </div>
+
+      <div className="field">
+        <span className="toggle-text" id="scene-label">
+          <span className="toggle-title">Home screen</span>
+          <span className="toggle-hint">
+            The picture behind your day count, and how it grows.
+          </span>
+        </span>
+        <div
+          className="scene-picker"
+          role="radiogroup"
+          aria-labelledby="scene-label"
+        >
+          {SCENES.map((s) => (
+            <button
+              key={s.id}
+              role="radio"
+              aria-checked={s.id === scene.id}
+              className={`scene-option${s.id === scene.id ? " is-selected" : ""}`}
+              onClick={() => onChooseScene(s)}
+            >
+              <img src={s.thumbnail} alt="" />
+              <span className="scene-option-name">{s.name}</span>
+              <span className="scene-option-hint">{s.description}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="field">

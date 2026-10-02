@@ -18,6 +18,8 @@ const CHANGED_MIND_KEY = `${NS}.changedMindCount`;
 const SHOW_STATS_KEY = `${NS}.showStats`;
 const DAY_COUNT_MAX_KEY = `${NS}.dayCountMax`;
 const LIFETIME_DAY_COUNT_MAX_KEY = `${NS}.lifetimeDayCountMax`;
+const SCENE_KEY = `${NS}.scene`;
+const TREE_FALLS_SEEN_KEY = `${NS}.treeFallsSeen`;
 
 /**
  * One-time migration of persisted state from the app's former name ("drugaway").
@@ -91,6 +93,38 @@ export function getShowStats(): boolean {
 
 export function setShowStats(show: boolean): void {
   writeRaw(SHOW_STATS_KEY, show ? "1" : "0");
+}
+
+/**
+ * Which home-screen scene to show (see `src/scenes.ts`), as its id. Null if
+ * never chosen; the scenes registry falls back to the default for that, and
+ * for an id it no longer knows.
+ */
+export function getSceneId(): string | null {
+  return readRaw(SCENE_KEY);
+}
+
+export function setSceneId(id: string): void {
+  writeRaw(SCENE_KEY, id);
+}
+
+/**
+ * How many of the cherry tree's fallen blossoms the user has already watched
+ * fall, so each one's fall plays once — the next time the tree is on screen
+ * after the relapse — and then just lies on the ground. Null if the tree has
+ * never been shown this journey, in which case nothing has been missed: the
+ * ones already down are simply there. Cleared along with the journey, in
+ * `beginJourney`.
+ */
+export function getTreeFallsSeen(): number | null {
+  const raw = readRaw(TREE_FALLS_SEEN_KEY);
+  if (raw === null) return null;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+export function setTreeFallsSeen(count: number): void {
+  writeRaw(TREE_FALLS_SEEN_KEY, String(Math.max(0, Math.floor(count))));
 }
 
 /**
@@ -221,6 +255,7 @@ export function restartJourney(): string {
 export function beginJourney(startISO: string): string {
   removeRaw(DAY_COUNT_MAX_KEY);
   removeRaw(LIFETIME_DAY_COUNT_MAX_KEY);
+  removeRaw(TREE_FALLS_SEEN_KEY);
   writeRaw(START_KEY, startISO);
   writeRaw(JOURNEY_KEY, startISO);
   return startISO;

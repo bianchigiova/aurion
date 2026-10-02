@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import StarrySky from "../components/StarrySky";
 import { useDayCount } from "../hooks/useDayCount";
 import { formatDate, humanizeDays } from "../lib/days";
 import { getJourneyStartISO, getRelapseISOs } from "../lib/prefs";
+import type { Scene } from "../scenes";
 
 /** How long the day-count tooltip stays up before hiding itself. */
 const TOOLTIP_MS = 4_000;
@@ -11,6 +11,7 @@ const STARGAZE_MS = 8_000;
 
 interface Props {
   startISO: string;
+  scene: Scene;
   showStats: boolean;
   onAboutToUse: () => void;
   onOpenStats: () => void;
@@ -19,13 +20,14 @@ interface Props {
 
 export default function HomeScreen({
   startISO,
+  scene,
   showStats,
   onAboutToUse,
   onOpenStats,
   onOpenSettings,
 }: Props) {
   const days = useDayCount(startISO);
-  // The sky is seeded from the whole journey, not the current streak, so a
+  // The scene grows with the whole journey, not the current streak, so a
   // relapse doesn't reset it — read once; a relapse remounts this screen
   // fresh (see App's areYouSure → home transition) rather than needing a
   // live subscription.
@@ -52,8 +54,8 @@ export default function HomeScreen({
     return () => window.clearTimeout(timer);
   }, [stargazing]);
 
-  // Tapping the sky (anywhere but a button) fades the UI out to leave just the
-  // stars; the next tap anywhere, or a few seconds, brings it back.
+  // Tapping the scene (anywhere but a button) fades the UI out to leave just
+  // the picture; the next tap anywhere, or a few seconds, brings it back.
   const onScreenTap = (e: MouseEvent) => {
     if (tapDismissesTooltip.current) return;
     if (!stargazing && (e.target as Element).closest("button")) return;
@@ -76,15 +78,15 @@ export default function HomeScreen({
 
   return (
     <section
-      className={`screen home${stargazing ? " is-stargazing" : ""}`}
+      className={`screen home home--${scene.tone}${stargazing ? " is-stargazing" : ""}`}
       onPointerDown={() => {
         tapDismissesTooltip.current = tooltipOpen;
       }}
       onClick={onScreenTap}
     >
-      <StarrySky
-        seedKey={journeyStartISO}
-        count={lifetimeDays}
+      <scene.Component
+        journeyStartISO={journeyStartISO}
+        days={lifetimeDays}
         relapseISOs={relapseISOs}
       />
 

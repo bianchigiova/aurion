@@ -6,14 +6,17 @@ import StatsScreen from "./screens/StatsScreen";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import {
   beginJourney,
+  getSceneId,
   getShowStats,
   getSobrietyStartISO,
   hasSobrietyStart,
   recordChangedMind,
   recordRelapse,
   restartJourney,
+  setSceneId,
   setShowStats as persistShowStats,
 } from "./lib/prefs";
+import { sceneById, type Scene } from "./scenes";
 
 type Screen = "home" | "areYouSure" | "stats" | "settings";
 
@@ -24,6 +27,12 @@ export default function App() {
     hasSobrietyStart() ? getSobrietyStartISO() : null,
   );
   const [showStats, setShowStats] = useState(getShowStats);
+  const [scene, setScene] = useState(() => sceneById(getSceneId()));
+
+  const chooseScene = (next: Scene) => {
+    setSceneId(next.id);
+    setScene(next);
+  };
 
   const toggleStats = (show: boolean) => {
     persistShowStats(show);
@@ -58,6 +67,7 @@ export default function App() {
       {screen === "home" && (
         <HomeScreen
           startISO={startISO}
+          scene={scene}
           showStats={showStats}
           onAboutToUse={() => setScreen("areYouSure")}
           onOpenStats={() => setScreen("stats")}
@@ -78,6 +88,8 @@ export default function App() {
 
       {screen === "settings" && (
         <SettingsScreen
+          scene={scene}
+          onChooseScene={chooseScene}
           showStats={showStats}
           onToggleStats={toggleStats}
           onRestart={restart}

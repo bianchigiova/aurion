@@ -25,7 +25,18 @@ love, or yourself, happy and proud — between the impulse and the act.
     progress bar each time. On the final click it resets the counter to 0 and
     returns home.
   - `I changed my mind` → just returns home.
-- **Settings** — add or remove photos, and restart the journey (a confirm
+- **Home screen scenes** — the picture behind the counter, picked in Settings:
+  - _Night sky_ (default): a new star every day of the journey; after a relapse
+    a cloud drifts over for a while and fades.
+  - _Cherry tree_: starts bare and grows a blossom every day; each relapse
+    makes one fall to the ground, where it stays (nothing falls from a bare
+    tree). Once every branch is in bloom, further days add leaves. Blossom
+    spots come from `scripts/tree-mounts.py`, and the blossom sprites are cut
+    from the sakura sheet by `scripts/blossom-sprites.py` — re-run them if the
+    art changes.
+
+  Scenes live in `src/scenes.ts`; adding one is a component plus an entry there.
+- **Settings** — choose the home screen scene, add or remove photos, and restart the journey (a confirm
   dialog first) — which clears the history and stats and resets the counter
   to zero from today. Photos are kept.
 

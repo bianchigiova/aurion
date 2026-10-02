@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import skyUrl from "../assets/night-sky.jpg";
 import { cloudProgress, generateClouds, type Cloud } from "../lib/clouds";
 import { generateStars, type Star } from "../lib/stars";
+import type { SceneProps } from "../scenes";
 
 /** Natural size of night-sky.jpg, and how far down its sky the stars reach
  *  (into the tops of the clouds, where they fade out). */
@@ -54,15 +55,6 @@ function loadCloudSprite(index: number): HTMLImageElement | undefined {
   return img;
 }
 
-interface Props {
-  /** Seeds the star positions, so the same sky comes back every time. */
-  seedKey: string;
-  /** One star per sober day. */
-  count: number;
-  /** One drifting, fading cloud per relapse still within its dissipation window. */
-  relapseISOs: string[];
-}
-
 interface Comet {
   start: number;
   duration: number;
@@ -75,7 +67,9 @@ interface Comet {
 
 /**
  * Full-screen night sky: the background illustration with one star per day
- * drawn above its horizon. The stars sit on two canvases — steady ones are
+ * of the journey drawn above its horizon (seeded by the journey start, so the
+ * same sky comes back every time), and one drifting, fading cloud per relapse
+ * still within its dissipation window. The stars sit on two canvases — steady ones are
  * painted once per resize, twinkling ones (and the odd comet) every frame.
  *
  * The newest star (today's) is born again every time the screen opens or the
@@ -83,10 +77,17 @@ interface Comet {
  * is open, the new count brings a new newest star with it. Once born, it
  * sparkles again every few seconds so it stays easy to find.
  */
-export default function StarrySky({ seedKey, count, relapseISOs }: Props) {
+export default function StarrySky({
+  journeyStartISO,
+  days,
+  relapseISOs,
+}: SceneProps) {
   const staticRef = useRef<HTMLCanvasElement>(null);
   const liveRef = useRef<HTMLCanvasElement>(null);
-  const stars = useMemo(() => generateStars(seedKey, count), [seedKey, count]);
+  const stars = useMemo(
+    () => generateStars(journeyStartISO, days),
+    [journeyStartISO, days],
+  );
   const clouds = useMemo(
     () => generateClouds(relapseISOs, cloudSpriteUrls.length),
     [relapseISOs],
@@ -252,7 +253,7 @@ export default function StarrySky({ seedKey, count, relapseISOs }: Props) {
   }, [stars, clouds]);
 
   return (
-    <div className="sky" aria-hidden="true">
+    <div className="scene scene--sky" aria-hidden="true">
       <img src={skyUrl} alt="" />
       <canvas ref={staticRef} />
       <canvas ref={liveRef} />

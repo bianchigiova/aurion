@@ -8,20 +8,26 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * the gap is rounded, so DST transitions (a 23- or 25-hour "day") don't skew it.
  */
 export function calendarDaysSince(iso: string): number {
-  const start = new Date(iso);
-  if (Number.isNaN(start.getTime())) return 0;
-  const now = new Date();
-  const startMidnight = new Date(
-    start.getFullYear(),
-    start.getMonth(),
-    start.getDate(),
+  return calendarDaysBetween(iso, new Date().toISOString());
+}
+
+/** Whole calendar days from the local date of `fromISO` to that of `toISO`
+ *  (never negative), counted the same way as `calendarDaysSince`. */
+export function calendarDaysBetween(fromISO: string, toISO: string): number {
+  const from = new Date(fromISO);
+  const to = new Date(toISO);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 0;
+  const fromMidnight = new Date(
+    from.getFullYear(),
+    from.getMonth(),
+    from.getDate(),
   ).getTime();
-  const todayMidnight = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
+  const toMidnight = new Date(
+    to.getFullYear(),
+    to.getMonth(),
+    to.getDate(),
   ).getTime();
-  return Math.max(0, Math.round((todayMidnight - startMidnight) / MS_PER_DAY));
+  return Math.max(0, Math.round((toMidnight - fromMidnight) / MS_PER_DAY));
 }
 
 function pad2(n: number): string {
