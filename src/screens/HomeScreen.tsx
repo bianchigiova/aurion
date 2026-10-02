@@ -48,6 +48,24 @@ export default function HomeScreen({
     return () => document.documentElement.classList.remove("no-scroll");
   }, []);
 
+  // Blend the status bar area into the scene: iOS tints it (and Safari's
+  // toolbars) with the page background and theme colour, which otherwise
+  // stay the app's dark navy — a murky band over a light picture.
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    const previousTheme = meta?.content;
+    meta?.setAttribute("content", scene.topColor);
+    document.body.style.background = scene.topColor;
+    document.documentElement.style.background = scene.topColor;
+    return () => {
+      if (meta && previousTheme) meta.setAttribute("content", previousTheme);
+      document.body.style.background = "";
+      document.documentElement.style.background = "";
+    };
+  }, [scene]);
+
   useEffect(() => {
     if (!stargazing) return;
     const timer = window.setTimeout(() => setStargazing(false), STARGAZE_MS);

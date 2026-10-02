@@ -33,6 +33,10 @@ export interface Scene {
   /** Whether the picture is dark or light, so the counter and buttons on
    *  top of it can switch to colours that read against it. */
   tone: "dark" | "light";
+  /** The colour along the top of the picture. iOS tints and blurs the status
+   *  bar area with the page's colour, so the home screen switches to this
+   *  while it's up, and the band blends into the picture. */
+  topColor: string;
   Component: ComponentType<SceneProps>;
 }
 
@@ -43,6 +47,7 @@ export const SCENES: Scene[] = [
     description: "A new star every day. Clouds drift over for a while after giving in.",
     thumbnail: skyThumb,
     tone: "dark",
+    topColor: "#01133e",
     Component: StarrySky,
   },
   {
@@ -51,6 +56,7 @@ export const SCENES: Scene[] = [
     description: "A new blossom every day. One falls to the ground after giving in.",
     thumbnail: cherryThumb,
     tone: "light",
+    topColor: "#fdebe3",
     Component: CherryTree,
   },
 ];
