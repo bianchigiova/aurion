@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import PhotoPicker from "../components/PhotoPicker";
 import QrCode from "../components/QrCode";
-import { usePhotos } from "../hooks/usePhotos";
-import { SCENES, type Scene } from "../scenes";
+import ScenePicker from "../components/ScenePicker";
+import type { Scene } from "../scenes";
 
 /** Where the app itself is hosted, for the share QR code — resolved at
  *  runtime (not hardcoded) so it's correct wherever this build is served. */
@@ -26,15 +27,6 @@ export default function SettingsScreen({
 }: Props) {
   const [confirmingRestart, setConfirmingRestart] = useState(false);
   const [sharingOpen, setSharingOpen] = useState(false);
-  const { photos, loading, addFiles, remove } = usePhotos();
-  const fileInput = useRef<HTMLInputElement>(null);
-
-  const onPickFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      await addFiles(e.target.files);
-    }
-    e.target.value = "";
-  };
 
   return (
     <section className="screen settings">
@@ -49,50 +41,9 @@ export default function SettingsScreen({
         <h1>Settings</h1>
       </header>
 
-      <div className="field">
-        <div className="field-row field-row--spread">
-          <label>Photos</label>
-          <button
-            className="icon-button icon-button--framed"
-            onClick={() => fileInput.current?.click()}
-            aria-label="Add photos"
-          >
-            <PlusIcon />
-          </button>
-        </div>
-        <input
-          ref={fileInput}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={onPickFiles}
-        />
-
-        {loading ? (
-          <p className="muted">Loading…</p>
-        ) : photos.length === 0 ? (
-          <p className="muted">
-            No photos yet. Add the people you're doing this for — or
-            yourself, happy and proud.
-          </p>
-        ) : (
-          <div className="photo-grid">
-            {photos.map((p) => (
-              <div className="photo-tile" key={p.id}>
-                <img src={p.url} alt={p.name} />
-                <button
-                  className="photo-remove"
-                  onClick={() => remove(p.id)}
-                  aria-label={`Remove ${p.name}`}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <PhotoPicker
+        emptyHint="No photos yet. Add the people you're doing this for — or yourself, happy and proud."
+      />
 
       <div className="field">
         <span className="toggle-text" id="scene-label">
@@ -101,25 +52,11 @@ export default function SettingsScreen({
             The picture behind your day count, and how it grows.
           </span>
         </span>
-        <div
-          className="scene-picker"
-          role="radiogroup"
-          aria-labelledby="scene-label"
-        >
-          {SCENES.map((s) => (
-            <button
-              key={s.id}
-              role="radio"
-              aria-checked={s.id === scene.id}
-              className={`scene-option${s.id === scene.id ? " is-selected" : ""}`}
-              onClick={() => onChooseScene(s)}
-            >
-              <img src={s.thumbnail} alt="" />
-              <span className="scene-option-name">{s.name}</span>
-              <span className="scene-option-hint">{s.description}</span>
-            </button>
-          ))}
-        </div>
+        <ScenePicker
+          scene={scene}
+          onChoose={onChooseScene}
+          labelledBy="scene-label"
+        />
       </div>
 
       <div className="field">
@@ -258,25 +195,6 @@ function BackIcon() {
     >
       <path d="M19 12H5" />
       <path d="M12 19l-7-7 7-7" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 5v14" />
-      <path d="M5 12h14" />
     </svg>
   );
 }

@@ -28,6 +28,11 @@ export default function App() {
   );
   const [showStats, setShowStats] = useState(getShowStats);
   const [scene, setScene] = useState(() => sceneById(getSceneId()));
+  // `?setup` in the URL shows first-time setup again, for testing it on a
+  // device that's already set up.
+  const [previewingSetup, setPreviewingSetup] = useState(() =>
+    new URLSearchParams(window.location.search).has("setup"),
+  );
 
   const chooseScene = (next: Scene) => {
     setSceneId(next.id);
@@ -54,10 +59,27 @@ export default function App() {
     setScreen("home");
   };
 
-  if (startISO === null) {
+  // Finishing a `?setup` preview leaves an existing journey alone (the date
+  // step is just for show) and drops the parameter, so a reload goes home.
+  // Photos and the scene picked along the way are real, and stay.
+  const endSetupPreview = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("setup");
+    window.history.replaceState(null, "", url);
+    setPreviewingSetup(false);
+  };
+
+  if (startISO === null || previewingSetup) {
     return (
       <div className="app">
-        <WelcomeScreen onStart={(iso) => setStartISO(beginJourney(iso))} />
+        <WelcomeScreen
+          scene={scene}
+          onChooseScene={chooseScene}
+          onStart={(iso) => {
+            if (startISO === null) setStartISO(beginJourney(iso));
+            if (previewingSetup) endSetupPreview();
+          }}
+        />
       </div>
     );
   }

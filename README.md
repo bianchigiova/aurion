@@ -9,9 +9,18 @@ love, or yourself, happy and proud — between the impulse and the act.
 
 ## How it works
 
-- **Welcome** — shown once, on first install. Asks for the last day you gave in, so
-  you don't have to start from zero (handy when moving to a new phone). Leave it
-  as today to start fresh; future dates aren't accepted.
+- **Welcome** — a short setup, shown once, on first install (restarting the
+  journey later doesn't bring it back):
+  1. The last day you gave in, so you don't have to start from zero (handy when
+     moving to a new phone). Leave it as today to start fresh; future dates
+     aren't accepted.
+  2. Your photos, with a word on what they're for.
+  3. The home screen scene.
+
+  The counter only starts on the last step, so leaving halfway brings setup
+  back next time. To see setup again on a device that's already set up, open
+  the app with `?setup` in the URL; finishing it then goes home without
+  touching the counter (photos and the scene picked along the way do stick).
 - **Home** — large day counter (`days without`) plus `Since <date>`.
   The count is calendar days since a stored start timestamp, so it ticks over at
   local midnight and advances on its own (it also refreshes when you reopen or

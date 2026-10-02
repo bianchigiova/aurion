@@ -418,6 +418,42 @@ button.counter-number {
   margin-bottom: 0;
 }
 
+.welcome > .muted {
+  margin: -12px 0 0;
+}
+
+/* Where you are in setup: one dot per step, filled up to the current one. */
+.setup-steps {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-steps li {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  transition: background 0.2s ease;
+}
+
+.setup-steps li.is-done {
+  background: var(--accent);
+}
+
+/* Back and Next side by side; Next alone takes the full width. */
+.setup-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.setup-actions .button {
+  flex: 1;
+}
+
 .field-error {
   margin: 8px 0 0;
   color: var(--danger);
