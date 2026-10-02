@@ -51,7 +51,7 @@ love, or yourself, happy and proud — between the impulse and the act.
 
 ## Languages
 
-English, Italian and Modern Greek. By default the app follows the phone's
+English, German, Spanish, French, Italian and Modern Greek. By default the app follows the phone's
 language (falling back to English); Settings can pin one instead. Each
 language is a file in `src/i18n/` — `en.ts` is the source, and TypeScript
 won't build if another language is missing a message. Dates and durations

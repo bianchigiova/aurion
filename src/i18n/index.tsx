@@ -18,8 +18,11 @@ import {
   type ReactNode,
 } from "react";
 import { getLanguage, setLanguage as persistLanguage } from "../lib/prefs";
+import { de } from "./de";
 import { el } from "./el";
 import { en, type Messages } from "./en";
+import { es } from "./es";
+import { fr } from "./fr";
 import { it } from "./it";
 
 export type { Messages };
@@ -32,8 +35,12 @@ export interface Locale {
   messages: Messages;
 }
 
+/** English first (it's the fallback), then the rest by their own names. */
 export const LOCALES: Locale[] = [
   { id: "en", name: "English", messages: en },
+  { id: "de", name: "Deutsch", messages: de },
+  { id: "es", name: "Español", messages: es },
+  { id: "fr", name: "Français", messages: fr },
   { id: "it", name: "Italiano", messages: it },
   { id: "el", name: "Ελληνικά", messages: el },
 ];
