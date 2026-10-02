@@ -4,6 +4,8 @@ import qrcode from "qrcode-generator";
 interface Props {
   value: string;
   size: number;
+  /** What the code is, for screen readers. */
+  label: string;
 }
 
 /**
@@ -12,7 +14,7 @@ interface Props {
  * rest of the app. Always black-on-white regardless of app theme: that's
  * the one polarity every scanner is guaranteed to read.
  */
-export default function QrCode({ value, size }: Props) {
+export default function QrCode({ value, size, label }: Props) {
   const modules = useMemo(() => {
     const qr = qrcode(0, "M");
     qr.addData(value);
@@ -36,7 +38,7 @@ export default function QrCode({ value, size }: Props) {
       height={size}
       viewBox={`0 0 ${size} ${size}`}
       role="img"
-      aria-label="QR code linking to the app"
+      aria-label={label}
     >
       <rect width={size} height={size} fill="#fff" />
       {modules.map((row, r) =>

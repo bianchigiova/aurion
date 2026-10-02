@@ -231,8 +231,10 @@ html.no-scroll body {
   z-index: 1;
 }
 
+/* Above the counter too: its box fills the middle of the screen and reaches
+   up under these corner buttons, which would otherwise swallow their taps. */
 .home > .home-actions {
-  z-index: 1;
+  z-index: 2;
 }
 
 .home .counter-number {
@@ -726,6 +728,26 @@ button.counter-number {
 
 .field input[type="text"]:focus,
 .field input[type="date"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* A dropdown styled like the text and date fields, with its own arrow. */
+.select {
+  appearance: none;
+  flex: 0 0 auto;
+  padding: 12px 38px 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--surface-2);
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 14px center;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.select:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

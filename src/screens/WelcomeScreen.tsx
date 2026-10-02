@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PhotoPicker from "../components/PhotoPicker";
 import ScenePicker from "../components/ScenePicker";
+import { useI18n } from "../i18n";
 import { dateInputToISO, todayInputValue } from "../lib/days";
 import type { Scene } from "../scenes";
 
@@ -21,6 +22,7 @@ interface Props {
  * journey later (from Settings) doesn't come through here.
  */
 export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) {
+  const { t } = useI18n();
   const [step, setStep] = useState<Step>("date");
   const [today] = useState(todayInputValue);
   const [date, setDate] = useState(today);
@@ -32,7 +34,7 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
 
   return (
     <section className="screen welcome">
-      <ol className="setup-steps" aria-label={`Step ${index + 1} of ${STEPS.length}`}>
+      <ol className="setup-steps" aria-label={t.welcome.stepOf(index + 1, STEPS.length)}>
         {STEPS.map((s, i) => (
           <li key={s} className={i <= index ? "is-done" : undefined} />
         ))}
@@ -41,12 +43,12 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
       {step === "date" && (
         <>
           <div className="prompt">
-            <h1>Welcome</h1>
-            <p>When was the last time you gave in?</p>
+            <h1>{t.welcome.title}</h1>
+            <p>{t.welcome.question}</p>
           </div>
 
           <div className="field">
-            <label htmlFor="last-use">Last day you gave in</label>
+            <label htmlFor="last-use">{t.welcome.dateLabel}</label>
             <div className="field-row">
               <input
                 id="last-use"
@@ -56,13 +58,9 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
-            <p className="muted">
-              Starting fresh? Leave it as today. Switching phones or picking up
-              from earlier? Choose the day you last used and the counter
-              carries on from there.
-            </p>
+            <p className="muted">{t.welcome.dateHint}</p>
             {date > today && (
-              <p className="field-error">That date is in the future.</p>
+              <p className="field-error">{t.welcome.dateInFuture}</p>
             )}
           </div>
 
@@ -72,7 +70,7 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
               disabled={!startISO}
               onClick={next}
             >
-              Next
+              {t.common.next}
             </button>
           </div>
         </>
@@ -81,24 +79,20 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
       {step === "photos" && (
         <>
           <div className="prompt">
-            <h1>Your reasons</h1>
-            <p>
-              When you're about to give in, Aurion first shows you a photo of
-              someone you love — or of yourself, happy and proud. Each photo
-              is one more moment to think it over.
-            </p>
+            <h1>{t.welcome.photosTitle}</h1>
+            <p>{t.welcome.photosIntro}</p>
           </div>
 
-          <PhotoPicker emptyHint="No photos yet. Tap + to add some." />
+          <PhotoPicker emptyHint={t.welcome.photosEmpty} />
 
-          <p className="muted">You can add or change them later in Settings.</p>
+          <p className="muted">{t.welcome.photosLater}</p>
 
           <div className="setup-actions">
             <button className="button button-ghost" onClick={back}>
-              Back
+              {t.common.back}
             </button>
             <button className="button button-primary" onClick={next}>
-              Next
+              {t.common.next}
             </button>
           </div>
         </>
@@ -107,8 +101,8 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
       {step === "scene" && (
         <>
           <div className="prompt">
-            <h1 id="setup-scene-label">Home screen</h1>
-            <p>The picture behind your day count, and how it grows.</p>
+            <h1 id="setup-scene-label">{t.scenes.title}</h1>
+            <p>{t.scenes.hint}</p>
           </div>
 
           <ScenePicker
@@ -117,18 +111,18 @@ export default function WelcomeScreen({ scene, onChooseScene, onStart }: Props) 
             labelledBy="setup-scene-label"
           />
 
-          <p className="muted">You can change it later in Settings.</p>
+          <p className="muted">{t.welcome.sceneLater}</p>
 
           <div className="setup-actions">
             <button className="button button-ghost" onClick={back}>
-              Back
+              {t.common.back}
             </button>
             <button
               className="button button-primary"
               disabled={!startISO}
               onClick={() => startISO && onStart(startISO)}
             >
-              Start counting
+              {t.welcome.start}
             </button>
           </div>
         </>

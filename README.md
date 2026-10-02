@@ -45,9 +45,18 @@ love, or yourself, happy and proud — between the impulse and the act.
     art changes.
 
   Scenes live in `src/scenes.ts`; adding one is a component plus an entry there.
-- **Settings** — choose the home screen scene, add or remove photos, and restart the journey (a confirm
-  dialog first) — which clears the history and stats and resets the counter
-  to zero from today. Photos are kept.
+- **Settings** — choose the home screen scene and the language, add or remove
+  photos, and restart the journey (a confirm dialog first) — which clears the
+  history and stats and resets the counter to zero from today. Photos are kept.
+
+## Languages
+
+English, Italian and Modern Greek. By default the app follows the phone's
+language (falling back to English); Settings can pin one instead. Each
+language is a file in `src/i18n/` — `en.ts` is the source, and TypeScript
+won't build if another language is missing a message. Dates and durations
+("1 anno, 3 mesi") come from the browser's `Intl` APIs. To add a language,
+copy `en.ts`, translate it, and list it in `src/i18n/index.tsx`.
 
 ## Data & privacy
 

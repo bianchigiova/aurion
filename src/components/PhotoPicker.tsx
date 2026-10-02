@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { usePhotos } from "../hooks/usePhotos";
+import { useI18n } from "../i18n";
 
 interface Props {
   /** Shown instead of the grid while there are no photos yet. */
@@ -11,6 +12,7 @@ interface Props {
  * remove button on each. Used in Settings and in first-time setup.
  */
 export default function PhotoPicker({ emptyHint }: Props) {
+  const { t } = useI18n();
   const { photos, loading, addFiles, remove } = usePhotos();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -24,11 +26,11 @@ export default function PhotoPicker({ emptyHint }: Props) {
   return (
     <div className="field">
       <div className="field-row field-row--spread">
-        <label>Photos</label>
+        <label>{t.photos.label}</label>
         <button
           className="icon-button icon-button--framed"
           onClick={() => fileInput.current?.click()}
-          aria-label="Add photos"
+          aria-label={t.photos.add}
         >
           <PlusIcon />
         </button>
@@ -43,7 +45,7 @@ export default function PhotoPicker({ emptyHint }: Props) {
       />
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <p className="muted">{t.photos.loading}</p>
       ) : photos.length === 0 ? (
         <p className="muted">{emptyHint}</p>
       ) : (
@@ -54,7 +56,7 @@ export default function PhotoPicker({ emptyHint }: Props) {
               <button
                 className="photo-remove"
                 onClick={() => remove(p.id)}
-                aria-label={`Remove ${p.name}`}
+                aria-label={t.photos.remove(p.name)}
               >
                 ×
               </button>

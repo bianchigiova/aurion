@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useDayCount } from "../hooks/useDayCount";
+import { useI18n } from "../i18n";
 import { formatDate, humanizeDays } from "../lib/days";
 import { getJourneyStartISO, getRelapseISOs } from "../lib/prefs";
 import type { Scene } from "../scenes";
@@ -26,6 +27,7 @@ export default function HomeScreen({
   onOpenStats,
   onOpenSettings,
 }: Props) {
+  const { t, formatTag } = useI18n();
   const days = useDayCount(startISO);
   // The scene grows with the whole journey, not the current streak, so a
   // relapse doesn't reset it — read once; a relapse remounts this screen
@@ -113,7 +115,7 @@ export default function HomeScreen({
           <button
             className="icon-button"
             onClick={onOpenStats}
-            aria-label="Stats"
+            aria-label={t.home.stats}
           >
             <StatsIcon />
           </button>
@@ -121,7 +123,7 @@ export default function HomeScreen({
         <button
           className="icon-button"
           onClick={onOpenSettings}
-          aria-label="Settings"
+          aria-label={t.home.settings}
         >
           <CogIcon />
         </button>
@@ -140,17 +142,17 @@ export default function HomeScreen({
             role="tooltip"
             className={`counter-tooltip${tooltipOpen ? " is-open" : ""}`}
           >
-            {humanizeDays(startISO, days)}
+            {humanizeDays(startISO, days, formatTag)}
           </span>
         </button>
-        <span className="counter-label">
-          {days === 1 ? "day" : "days"} without
+        <span className="counter-label">{t.home.daysWithout(days)}</span>
+        <span className="counter-since">
+          {t.home.since(formatDate(startISO, formatTag))}
         </span>
-        <span className="counter-since">Since {formatDate(startISO)}</span>
       </div>
 
       <button className="button button-danger" onClick={onAboutToUse}>
-        I'm about to give in
+        {t.home.aboutToGiveIn}
       </button>
     </section>
   );

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { SCENES, type Scene } from "../scenes";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
  * Used in Settings and in first-time setup.
  */
 export default function ScenePicker({ scene, onChoose, labelledBy }: Props) {
+  const { t } = useI18n();
   return (
     <div className="scene-picker" role="radiogroup" aria-labelledby={labelledBy}>
       {SCENES.map((s) => (
@@ -23,8 +25,8 @@ export default function ScenePicker({ scene, onChoose, labelledBy }: Props) {
           onClick={() => onChoose(s)}
         >
           <img src={s.thumbnail} alt="" />
-          <span className="scene-option-name">{s.name}</span>
-          <span className="scene-option-hint">{s.description}</span>
+          <span className="scene-option-name">{t.scenes[s.id].name}</span>
+          <span className="scene-option-hint">{t.scenes[s.id].description}</span>
         </button>
       ))}
     </div>

@@ -57,19 +57,28 @@ export function dateInputToISO(value: string): string | null {
   return new Date(Math.min(noon.getTime(), Date.now())).toISOString();
 }
 
-/** Locale date string for the "Since ..." subtitle. */
-export function formatDate(iso: string): string {
+/** A date written out in full in the language `tag` (a BCP 47 tag, see
+ *  i18n's `formatTag`), e.g. "2 October 2026" or "2 ottobre 2026". */
+export function formatDate(iso: string, tag: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString(tag, {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 }
 
-function plural(n: number, unit: string): string {
-  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+type DurationUnit = "day" | "week" | "month" | "year";
+
+/** "1 day", "3 giorni", "5 ημέρες": the number with its unit, spelled out
+ *  and pluralised by the browser for the language `tag`. */
+export function formatUnit(n: number, unit: DurationUnit, tag: string): string {
+  return new Intl.NumberFormat(tag, {
+    style: "unit",
+    unit,
+    unitDisplay: "long",
+  }).format(n);
 }
 
 /** `date` moved on by `months` calendar months, clamped to the end of the
@@ -89,9 +98,11 @@ function addMonths(date: Date, months: number): Date {
  * A day count spelled out in calendar terms, e.g. "1 year, 3 months, 10 days".
  * Counts real calendar months and years from the local start date, so it lines
  * up with the "Since ..." date (June 1 → Sept 1 is exactly "3 months"). Under a
- * month it uses weeks instead; under a week, just days.
+ * month it uses weeks instead; under a week, just days. Written in the
+ * language `tag`.
  */
-export function humanizeDays(startISO: string, days: number): string {
+export function humanizeDays(startISO: string, days: number, tag: string): string {
+  const plural = (n: number, unit: DurationUnit) => formatUnit(n, unit, tag);
   const s = new Date(startISO);
   if (Number.isNaN(s.getTime())) return plural(days, "day");
   const start = new Date(s.getFullYear(), s.getMonth(), s.getDate());

@@ -6,6 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { usePhotos } from "../hooks/usePhotos";
+import { useI18n } from "../i18n";
 
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 2.5;
@@ -24,6 +25,7 @@ export default function AreYouSureScreen({
   onGoAhead,
   onChangedMind,
 }: Props) {
+  const { t } = useI18n();
   const { photos, loading } = usePhotos();
   const [start, setStart] = useState<number | null>(null);
   const [clicks, setClicks] = useState(0);
@@ -186,8 +188,8 @@ export default function AreYouSureScreen({
       )}
 
       <div className="prompt">
-        <h1>Are you sure?</h1>
-        <p>You made a promise to someone you love.</p>
+        <h1>{t.areYouSure.title}</h1>
+        <p>{t.areYouSure.promise}</p>
       </div>
 
       <div className="actions">
@@ -196,10 +198,10 @@ export default function AreYouSureScreen({
           style={fillStyle}
           onClick={onGoAheadClick}
         >
-          <span className="button-progress-label">I'm doing it</span>
+          <span className="button-progress-label">{t.areYouSure.doingIt}</span>
         </button>
         <button className="button button-primary" onClick={onChangedMind}>
-          I changed my mind
+          {t.areYouSure.changedMind}
         </button>
       </div>
     </section>

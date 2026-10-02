@@ -19,6 +19,7 @@ const SHOW_STATS_KEY = `${NS}.showStats`;
 const DAY_COUNT_MAX_KEY = `${NS}.dayCountMax`;
 const LIFETIME_DAY_COUNT_MAX_KEY = `${NS}.lifetimeDayCountMax`;
 const SCENE_KEY = `${NS}.scene`;
+const LANGUAGE_KEY = `${NS}.language`;
 const TREE_FALLS_SEEN_KEY = `${NS}.treeFallsSeen`;
 
 /**
@@ -106,6 +107,19 @@ export function getSceneId(): string | null {
 
 export function setSceneId(id: string): void {
   writeRaw(SCENE_KEY, id);
+}
+
+/**
+ * The language picked in Settings, as a locale id ("en", "it", ...), or null
+ * to follow the device's language (see src/i18n).
+ */
+export function getLanguage(): string | null {
+  return readRaw(LANGUAGE_KEY);
+}
+
+export function setLanguage(id: string | null): void {
+  if (id === null) removeRaw(LANGUAGE_KEY);
+  else writeRaw(LANGUAGE_KEY, id);
 }
 
 /**
